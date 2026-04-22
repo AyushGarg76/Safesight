@@ -13,8 +13,10 @@ import numpy as np
 model = models.mobilenet_v2(weights=None)
 model.classifier[1] = nn.Linear(model.last_channel, 2)
 
+import os
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 checkpoint = torch.load(
-    r"D:\Dev\Coding\Safesight\helmet_withoutyolo\V2\scripts\helmet_model_best.pth",
+    os.path.join(SCRIPT_DIR, "helmet_model_best.pth"),
     map_location="cpu"
 )
 
@@ -44,7 +46,7 @@ face_detector = mp_face.FaceDetection(min_detection_confidence=0.5)
 # =========================
 # VIDEO
 # =========================
-cap = cv2.VideoCapture(r"D:\Dev\Coding\Safesight\helmet_withoutyolo\V2\videoplayback.mp4")
+cap = cv2.VideoCapture(r"D:\ACADEMICS\SEM6\CV\Project_CV\V2\scripts\13777381_3840_2160_30fps.mp4")
 
 history = []
 HISTORY_SIZE = 5
@@ -111,6 +113,9 @@ while True:
             ch, cw = crop.shape[:2]
             if ch < 40 or cw < 40:
                 continue
+
+        if crop.size == 0 or crop.shape[0] == 0 or crop.shape[1] == 0:
+            continue
 
         # =========================
         # COLOR FILTER (REMOVE HELMET OBJECT)
