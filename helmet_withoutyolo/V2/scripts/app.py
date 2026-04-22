@@ -1,174 +1,100 @@
 import cv2
 import torch
-import torchvision.transforms as transforms
 from torchvision import models
+import torchvision.transforms as transforms
 import torch.nn as nn
 from PIL import Image
 import mediapipe as mp
-import numpy as np
 
-# =========================
-# MODEL
-# =========================
+# ===== LOAD MODEL =====
 model = models.mobilenet_v2(weights=None)
 model.classifier[1] = nn.Linear(model.last_channel, 2)
 
-checkpoint = torch.load(
-    r"D:\Dev\Coding\Safesight\helmet_withoutyolo\V2\scripts\helmet_model_best.pth",
-    map_location="cpu"
-)
-
+checkpoint = torch.load("helmet_model_best.pth", map_location="cpu")
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
+
 class_names = checkpoint['class_names']
 
-# =========================
-# TRANSFORM
-# =========================
+# ===== TRANSFORM =====
 transform = transforms.Compose([
     transforms.Resize((128,128)),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406],
-                         [0.229, 0.224, 0.225])
+    transforms.Normalize([0.485,0.456,0.406],[0.229,0.224,0.225])
 ])
 
-# =========================
-# DETECTORS
-# =========================
-hog = cv2.HOGDescriptor()
-hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
-
+# ===== MEDIAPIPE =====
 mp_face = mp.solutions.face_detection
 face_detector = mp_face.FaceDetection(min_detection_confidence=0.5)
 
-# =========================
-# VIDEO
-# =========================
-cap = cv2.VideoCapture(r"D:\Dev\Coding\Safesight\helmet_withoutyolo\V2\videoplayback.mp4")
+# ===== VIDEO PATH (CHANGE THIS) =====
+VIDEO_PATH = r"D:\Dev\Coding\Safesight\helmet_withoutyolo\V2\videoplayback.mp4"
 
-history = []
-HISTORY_SIZE = 5
+cap = cv2.VideoCapture(VIDEO_PATH)
 
+if not cap.isOpened():
+    print("❌ Error opening video")
+    exit()
+
+# ===== CLASSIFIER FUNCTION =====
+def classify(crop):
+    img = Image.fromarray(cv2.cvtColor(crop, cv2.COLOR_BGR2RGB))
+    tensor = transform(img).unsqueeze(0)
+
+    with torch.no_grad():
+        output = model(tensor)
+        probs = torch.softmax(output, dim=1)
+        conf, pred = torch.max(probs, 1)
+
+    return class_names[pred.item()], conf.item()
+
+# ===== LOOP =====
 while True:
     ret, frame = cap.read()
     if not ret:
+        print("✅ Video finished")
         break
 
-    frame = cv2.resize(frame, (800,600))
-    violation_frame = 0
+    frame = cv2.resize(frame, (800, 600))
 
-    boxes, _ = hog.detectMultiScale(frame)
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    results = face_detector.process(rgb)
 
-    for (x,y,w_box,h_box) in boxes:
+    if results.detections:
+        for det in results.detections:
+            bbox = det.location_data.relative_bounding_box
 
-        # 🔥 filter small detections
-        if w_box < 80 or h_box < 120:
-            continue
+            h, w, _ = frame.shape
+            x = int(bbox.xmin * w)
+            y = int(bbox.ymin * h)
+            bw = int(bbox.width * w)
+            bh = int(bbox.height * h)
 
-        person_roi = frame[y:y+h_box, x:x+w_box]
-        if person_roi.size == 0:
-            continue
+            # ===== EXPAND FOR HELMET =====
+            y1 = max(0, y - int(bh * 0.7))
+            y2 = y + bh
+            x1 = max(0, x)
+            x2 = min(w, x + bw)
 
-        rgb = cv2.cvtColor(person_roi, cv2.COLOR_BGR2RGB)
-        results = face_detector.process(rgb)
+            crop = frame[y1:y2, x1:x2]
 
-        # =========================
-        # CASE 1: FACE FOUND
-        # =========================
-        if results.detections:
-            for det in results.detections:
-
-                bbox = det.location_data.relative_bounding_box
-                fx1 = int(bbox.xmin * w_box)
-                fy1 = int(bbox.ymin * h_box)
-                fw = int(bbox.width * w_box)
-                fh = int(bbox.height * h_box)
-
-                fx2 = fx1 + fw
-                fy2 = fy1 + fh
-
-                crop = person_roi[fy1:fy2, fx1:fx2]
-
-                if crop.size == 0:
-                    continue
-
-                ch, cw = crop.shape[:2]
-
-                # 🔥 reject weird crops
-                if ch < 40 or cw < 40:
-                    continue
-
-                # 🔥 center crop only
-                crop = crop[int(ch*0.2):int(ch*0.8),
-                            int(cw*0.2):int(cw*0.8)]
-
-        # =========================
-        # CASE 2: NO FACE → fallback
-        # =========================
-        else:
-            crop = person_roi[0:int(h_box * 0.25), :]
-
-            ch, cw = crop.shape[:2]
-            if ch < 40 or cw < 40:
+            if crop.size == 0:
                 continue
 
-        # =========================
-        # COLOR FILTER (REMOVE HELMET OBJECT)
-        # =========================
-        mean_color = crop.mean(axis=(0,1))  # BGR
+            label, conf = classify(crop)
 
-        if mean_color[2] > 150 and mean_color[2] > mean_color[1]:
-            continue  # skip strong red objects
+            color = (0,255,0) if label=="helmet" else (0,0,255)
 
-        # =========================
-        # CLASSIFICATION
-        # =========================
-        img = Image.fromarray(cv2.cvtColor(crop, cv2.COLOR_BGR2RGB))
-        input_tensor = transform(img).unsqueeze(0)
-
-        with torch.no_grad():
-            output = model(input_tensor)
-            probs = torch.softmax(output, dim=1)
-            conf, pred = torch.max(probs, 1)
-
-        confidence = conf.item()
-        label = class_names[pred.item()]
-
-        # =========================
-        # STRICT CONDITION
-        # =========================
-        if label == "no_helmet" and confidence > 0.8:
-            violation_frame += 1
-
-            cv2.rectangle(frame,
-                          (x, y),
-                          (x + w_box, y + int(h_box * 0.3)),
-                          (0,0,255), 2)
-
-            cv2.putText(frame, "NO HELMET!",
-                        (x, y-10),
+            cv2.rectangle(frame, (x1,y1), (x2,y2), color, 2)
+            cv2.putText(frame, f"{label} {conf:.2f}",
+                        (x1, max(20, y1-10)),
                         cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6, (0,0,255), 2)
+                        0.6, color, 2)
 
-    # =========================
-    # TEMPORAL FILTER
-    # =========================
-    history.append(1 if violation_frame > 0 else 0)
+    cv2.imshow("Helmet Detection - Video", frame)
 
-    if len(history) > HISTORY_SIZE:
-        history.pop(0)
-
-    if sum(history) >= 3:
-        cv2.putText(frame, "ALERT: NO HELMET!",
-                    (20,40),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1,
-                    (0,0,255),
-                    3)
-
-    cv2.imshow("Helmet Detection (Stable)", frame)
-
-    if cv2.waitKey(25) & 0xFF == 27:
+    # press ESC to exit
+    if cv2.waitKey(1) & 0xFF == 27:
         break
 
 cap.release()
