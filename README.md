@@ -1,14 +1,15 @@
 # Safesight 
 A project under the course UCS532: Computer vision (3W13)
 
+## Overview
+SafeSight is a computer vision–based surveillance system designed to enhance safety by monitoring video streams and detecting critical scenarios such as helmet compliance. The system integrates image processing and real-time analysis to improve automated monitoring.
+
 This `README.md` is designed to explain the mathematical logic behind your Projective Transformation code, specifically for an industrial safety context.
 
 ---
 
 
-# Geometric Transformation Module: Bird's-Eye View Mapping
 
-This module converts skewed, oblique CCTV footage into a top-down **Bird's-Eye View (BEV)**. This allows for accurate distance measurements and zone-monitoring in a factory environment.
 
 ## 1. Projective Transformation (Homography)
 In a standard camera view, parallel lines (like floor markings) appear to converge at a vanishing point. To fix this, we use a **Homography Matrix ($H$)**. This is a $3 \times 3$ matrix that maps points from the source plane (Camera) to the destination plane (Ground Map).
