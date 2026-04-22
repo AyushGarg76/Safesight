@@ -52,6 +52,7 @@ import os
 import subprocess
 from image_enhancement import apply_trigger
 from tranform import get_birdseye_view, map_detection_to_ground
+import sys
 
 
 def run_pipeline(args):
@@ -112,7 +113,8 @@ def main():
     # V2 Mode
     elif args.v2:
         print("Launching V2 Project...")
-        subprocess.run(["python3", "V2/scripts/app.py"])
+        subprocess.run([sys.executable, "V2/scripts/app.py"])
+
     # Normal Pipeline Mode
     else:
         run_pipeline(args)

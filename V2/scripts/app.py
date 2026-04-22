@@ -13,10 +13,16 @@ import numpy as np
 model = models.mobilenet_v2(weights=None)
 model.classifier[1] = nn.Linear(model.last_channel, 2)
 
+import os
 checkpoint = torch.load(
-    r"D:\Dev\Coding\Safesight\helmet_withoutyolo\V2\scripts\helmet_model_best.pth",
+    os.path.join("V2", "scripts", "helmet_model_best.pth"),
     map_location="cpu"
 )
+
+# checkpoint = torch.load(
+#     r"D:\Dev\Coding\Safesight\helmet_withoutyolo\V2\scripts\helmet_model_best.pth",
+#     map_location="cpu"
+# )
 
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
@@ -44,7 +50,9 @@ face_detector = mp_face.FaceDetection(min_detection_confidence=0.5)
 # =========================
 # VIDEO
 # =========================
-cap = cv2.VideoCapture(r"D:\Dev\Coding\Safesight\helmet_withoutyolo\V2\videoplayback.mp4")
+# cap = cv2.VideoCapture(r"D:\Dev\Coding\Safesight\helmet_withoutyolo\V2\videoplayback.mp4")
+cap = cv2.VideoCapture(os.path.join("V2", "videoplayback.mp4"))
+
 
 history = []
 HISTORY_SIZE = 5
