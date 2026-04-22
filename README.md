@@ -14,11 +14,8 @@ Industrial environments like warehouses and factories are high-risk zones where 
 SafeSight automates safety monitoring using computer vision to detect helmet compliance in real time. It enables continuous surveillance through existing camera systems, reduces reliance on manual supervision, and improves overall workplace safety efficiently.
 
 🌍 Impact:
-
 👷 Reduces workplace accidents
-
 ⚖️ Ensures safety compliance
-
 🏭 Supports safer industrial environments
 
 
