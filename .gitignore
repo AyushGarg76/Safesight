@@ -16,4 +16,9 @@ helmet_withoutyolo/helmet-detection-system/
 helmet_withoutyolo/model/
 
 *.pt
-*.zip
+*.zipV2/data/processed.zip
+V2/data/processed.zip
+V2/data/processed.zip
+.DS_Store
+V2/data/
+V2/**/*.jpg

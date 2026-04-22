@@ -101,7 +101,7 @@ def main():
     parser.add_argument("--enhance", action="store_true", help="Apply image enhancement")
     parser.add_argument("--outdir", type=str, default="output/pipeline", help="Output folder")
     parser.add_argument("--helmet", action="store_true", help="Run helmet detection project")
-
+    parser.add_argument("--v2", action="store_true", help="Run V2")
     args = parser.parse_args()
 
     # Helmet Detection Mode
@@ -109,6 +109,10 @@ def main():
         print("Launching Helmet Detection...")
         subprocess.run(["streamlit", "run", "helmet_withoutyolo/app.py"])
 
+    # V2 Mode
+    elif args.v2:
+        print("Launching V2 Project...")
+        subprocess.run(["python3", "V2/scripts/app.py"])
     # Normal Pipeline Mode
     else:
         run_pipeline(args)
