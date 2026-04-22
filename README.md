@@ -8,7 +8,15 @@ This `README.md` is designed to explain the mathematical logic behind your Proje
 
 ---
 
+## Motivation
+Industrial environments like warehouses and factories are high-risk zones where strict safety compliance—such as wearing helmets—is essential. However, manual monitoring is often inconsistent, error-prone, and not scalable across large facilities. As a result, safety violations frequently go unnoticed until accidents occur.
 
+SafeSight automates safety monitoring using computer vision to detect helmet compliance in real time. It enables continuous surveillance through existing camera systems, reduces reliance on manual supervision, and improves overall workplace safety efficiently.
+
+🌍 Impact:
+👷 Reduces workplace accidents
+⚖️ Ensures safety compliance
+🏭 Supports safer industrial environments
 
 
 ## 1. Projective Transformation (Homography)
