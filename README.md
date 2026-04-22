@@ -1,13 +1,34 @@
 # Safesight 
 A project under the course UCS532: Computer vision (3W13)
 
+## Overview
+SafeSight is a computer vision–based surveillance system designed to enhance safety by monitoring video streams and detecting critical scenarios such as helmet compliance. The system integrates image processing and real-time analysis to improve automated monitoring.
+
 This `README.md` is designed to explain the mathematical logic behind your Projective Transformation code, specifically for an industrial safety context.
 
 ---
 
-# Geometric Transformation Module: Bird's-Eye View Mapping
+## Motivation
+Industrial environments like warehouses and factories are high-risk zones where strict safety compliance—such as wearing helmets—is essential. However, manual monitoring is often inconsistent, error-prone, and not scalable across large facilities. As a result, safety violations frequently go unnoticed until accidents occur.
 
-This module converts skewed, oblique CCTV footage into a top-down **Bird's-Eye View (BEV)**. This allows for accurate distance measurements and zone-monitoring in a factory environment.
+SafeSight automates safety monitoring using computer vision to detect helmet compliance in real time. It enables continuous surveillance through existing camera systems, reduces reliance on manual supervision, and improves overall workplace safety efficiently.
+
+## Key Features
+🎥 Real-Time Monitoring: 
+Processes live video streams from CCTV/IP cameras to enable continuous surveillance of industrial environments.
+
+🪖 Helmet Detection:
+ Automatically detects whether workers are wearing safety helmets, ensuring compliance with safety protocols.
+
+⚡ Automated Surveillance: 
+Eliminates the need for constant manual supervision by providing consistent, 24/7 monitoring.
+
+🧠 Image Enhancement:
+ Applies preprocessing techniques such as noise reduction and contrast improvement to enhance detection accuracy.
+
+🏭 Industrial-Ready Design: 
+Built specifically for deployment in warehouses, factories, and production units, addressing real-world safety challenges.
+
 
 ## 1. Projective Transformation (Homography)
 In a standard camera view, parallel lines (like floor markings) appear to converge at a vanishing point. To fix this, we use a **Homography Matrix ($H$)**. This is a $3 \times 3$ matrix that maps points from the source plane (Camera) to the destination plane (Ground Map).
