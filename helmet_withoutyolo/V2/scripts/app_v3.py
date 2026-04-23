@@ -49,7 +49,7 @@ mp_face      = mp.solutions.face_detection
 face_detect  = mp_face.FaceDetection(min_detection_confidence=0.4)
 
 # ===== CONFIG =====
-VIDEO_PATH          = "20685701-uhd_3840_2160_60fps.mp4"
+VIDEO_PATH          = "test_video5.mp4"
 CONF_THRESHOLD      = 0.75    # classifier confidence to show a label
 PERSON_SCORE        = 0.50    # SSD person confidence
 DETECT_EVERY_N      = 3       # run SSD every N frames; track in-between
