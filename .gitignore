@@ -16,6 +16,7 @@ helmet_withoutyolo/helmet-detection-system/
 helmet_withoutyolo/model/
 helmet_withoutyolo/V2/outputs_v4/
 helmet_withoutyolo/V2/scripts/test_videos/
+uploads
 
 *.pt
 *.zipV2/data/processed.zip
