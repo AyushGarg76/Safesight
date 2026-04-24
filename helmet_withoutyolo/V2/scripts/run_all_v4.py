@@ -37,7 +37,7 @@ SCRIPT_DIR  = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH  = os.path.join(SCRIPT_DIR, '..', '..', 'savedmodel', 'best_model_v4.pth')
 
 # All 6 test videos live in the same scripts/ directory
-VIDEO_PATTERN = os.path.join(SCRIPT_DIR, 'test_video*.mp4')
+VIDEO_PATTERN = os.path.join(SCRIPT_DIR, 'test_videos', 'test_video*.mp4')
 
 # Output folder: V2/outputs_v4/
 OUTPUT_DIR = os.path.join(SCRIPT_DIR, '..', 'outputs_v4')
