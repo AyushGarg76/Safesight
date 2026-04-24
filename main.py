@@ -263,7 +263,6 @@ def process_video_job(job_id, video_path, output_path):
         job['progress'] = 90
 
         # Build violation summary, grouped by timestamp
-        violations = []
         grouped_by_time = {}
         for v in violation_frames:
             time_str = v['time']
@@ -271,12 +270,49 @@ def process_video_job(job_id, video_path, output_path):
                 grouped_by_time[time_str] = []
             grouped_by_time[time_str].extend(v['scores'])
 
-        for time_str, scores in grouped_by_time.items():
-            if not scores:
-                continue
-            avg_score = sum(scores) / len(scores)
+        def parse_time(t_str):
+            m, s = map(int, t_str.split(':'))
+            return m * 60 + s
+
+        def format_time(t_sec):
+            m = t_sec // 60
+            s = t_sec % 60
+            return f'{m:02d}:{s:02d}'
+
+        sorted_times = sorted(grouped_by_time.keys(), key=parse_time)
+        violations = []
+
+        if sorted_times:
+            current_range_start = parse_time(sorted_times[0])
+            current_range_end = current_range_start
+            current_scores = list(grouped_by_time[sorted_times[0]])
+
+            for t_str in sorted_times[1:]:
+                t_sec = parse_time(t_str)
+                if t_sec == current_range_end + 1:
+                    current_range_end = t_sec
+                    current_scores.extend(grouped_by_time[t_str])
+                else:
+                    # Save previous range
+                    avg_score = sum(current_scores) / len(current_scores)
+                    time_label = format_time(current_range_start) if current_range_start == current_range_end else f"{format_time(current_range_start)} - {format_time(current_range_end)}"
+                    violations.append({
+                        'time': time_label,
+                        'type': 'No Helmet',
+                        'severity': 'high',
+                        'confidence': round(avg_score * 100, 1),
+                    })
+                    
+                    # Start new range
+                    current_range_start = t_sec
+                    current_range_end = t_sec
+                    current_scores = list(grouped_by_time[t_str])
+                    
+            # Save the last range
+            avg_score = sum(current_scores) / len(current_scores)
+            time_label = format_time(current_range_start) if current_range_start == current_range_end else f"{format_time(current_range_start)} - {format_time(current_range_end)}"
             violations.append({
-                'time': time_str,
+                'time': time_label,
                 'type': 'No Helmet',
                 'severity': 'high',
                 'confidence': round(avg_score * 100, 1),

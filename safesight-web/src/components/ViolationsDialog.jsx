@@ -12,6 +12,33 @@ export default function ViolationsDialog({ filename, violations = [], elapsed = 
         return () => window.removeEventListener('keydown', onKey);
     }, [onClose]);
 
+    const exportToCSV = () => {
+        if (violations.length === 0) return;
+
+        const headers = ['Timestamp', 'Violation', 'Severity', 'Confidence (%)'];
+        const rows = violations.map(v => [
+            v.time,
+            v.type,
+            v.severity.charAt(0).toUpperCase() + v.severity.slice(1),
+            v.confidence
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(r => r.map(cell => `"${cell}"`).join(','))
+        ].join('\n');
+
+        // Prepend BOM (\ufeff) so Excel opens UTF-8 correctly
+        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `safesight_report_${filename.split('.')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="dialog-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
             <div className="dialog" role="dialog" aria-modal="true">
@@ -98,7 +125,11 @@ export default function ViolationsDialog({ filename, violations = [], elapsed = 
                     <button className="btn btn-outline" onClick={onClose}>
                         Close
                     </button>
-                    <button className="btn btn-primary">
+                    <button 
+                        className="btn btn-primary" 
+                        onClick={exportToCSV}
+                        disabled={violations.length === 0}
+                    >
                         Export Report
                     </button>
                 </div>
