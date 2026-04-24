@@ -15,6 +15,7 @@ import numpy as np
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torch.cuda.amp import autocast
+from no_helmet_detection import draw_detections
 
 # ── Constants ────────────────────────────────────────────────────────────────
 NUM_CLASSES    = 4
@@ -60,18 +61,18 @@ def frame_to_tensor(frame, inference_size):
     return tensor.to(DEVICE)
 
 
-def draw_detections(frame, boxes, scores, labels, scale_x, scale_y):
-    for box, score, label in zip(boxes, scores, labels):
-        if score > THRESHOLD:
-            xmin, ymin, xmax, ymax = (int(box[0]*scale_x), int(box[1]*scale_y),
-                                       int(box[2]*scale_x), int(box[3]*scale_y))
-            class_name = CLASS_NAMES[label]
-            color = CLASS_COLORS.get(class_name, (200, 200, 200))
-            cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), color, 2)
-            cv2.putText(frame, f"{class_name} {score:.2f}",
-                        (xmin, max(ymin - 5, 0)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-    return frame
+# def draw_detections(frame, boxes, scores, labels, scale_x, scale_y):
+#     for box, score, label in zip(boxes, scores, labels):
+#         if score > THRESHOLD:
+#             xmin, ymin, xmax, ymax = (int(box[0]*scale_x), int(box[1]*scale_y),
+#                                        int(box[2]*scale_x), int(box[3]*scale_y))
+#             class_name = CLASS_NAMES[label]
+#             color = CLASS_COLORS.get(class_name, (200, 200, 200))
+#             cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), color, 2)
+#             cv2.putText(frame, f"{class_name} {score:.2f}",
+#                         (xmin, max(ymin - 5, 0)),
+#                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+#     return frame
 
 
 def run_batch(model, batch_tensors, use_amp):
