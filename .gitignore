@@ -14,6 +14,7 @@ helmet_withoutyolo/dataset/
 helmet_withoutyolo/V2/data/
 helmet_withoutyolo/helmet-detection-system/
 helmet_withoutyolo/model/
+helmet_withoutyolo/V2/outputs_v4/
 
 *.pt
 *.zipV2/data/processed.zip
