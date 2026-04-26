@@ -161,6 +161,20 @@ The frames are written in order to an mp4v output file.
 Individual frame violations are grouped by timestamp. Consecutive seconds are merged into ranges (e.g., 00:12 - 00:15), giving a clean, human-readable violation report.
 
 
+## Core Logic: Helmet Reasoning Engine
+
+The heart of the project is no_helmet_detection.py. It converts raw bounding boxes into safety decisions using two complementary strategies
+
+![Core Logic](./assests/core_logic.png)
+
+### Strategy 1 — Direct Head Detection
+
+The model was trained with a head class that specifically represents a bare (unprotected) head. Any head prediction above the confidence threshold is directly flagged as a violation.
+
+- *Advantage:* Fast, no extra computation
+- *Limitation:* Depends on model being confident about distinguishing head from helmet
+
+
 ## Documentation and Articles
 
 | Article | Link |
