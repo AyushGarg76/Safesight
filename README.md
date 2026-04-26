@@ -244,6 +244,8 @@ $$B = \mathrm{Var}(\nabla^2 I) \qquad \text{(blur score via Laplacian variance)}
 
 These metrics drive the adaptive enhancement strategy (CLAHE, gamma correction, sharpening, histogram equalization) applied before model inference.
 
+## Training Architecture
+![Training Architecture](./assests/training_archit.png)
 ## Documentation and Articles
 
 | Article | Link |
