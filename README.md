@@ -377,9 +377,25 @@ Produces:
 - *In-memory job store* — jobs are lost on server restart
 - *No real-time streaming* — batch video processing only (no RTSP / webcam)
 
+
+
 ## Documentation and Articles
 
 | Article | Link |
 | :--- | :--- |
 | The introduction | https://ayushgarg282800.substack.com/p/what-makes-a-computer-vision-project |
 | The research methodology | https://shubhampathneja21.substack.com/p/the-closed-loop-workflow-a-better |
+
+## Summary
+
+**SafeSight** is an end-to-end computer vision system for automated helmet compliance monitoring, combining deep learning with structured reasoning and production-grade system design.
+
+Unlike traditional detection pipelines, SafeSight goes beyond object detection to deliver **context-aware safety intelligence**:
+
+- **Detection** — A fine-tuned Faster R-CNN (ResNet-50 FPN) model trained to detect *person, head, and helmet* with high precision  
+- **Reasoning** — A deterministic IoU-based spatial reasoning engine that infers helmet violations from geometric relationships, reducing reliance on brittle classifiers  
+- **Temporal Consistency** — Frame sampling and aggregation strategies that convert noisy frame-level predictions into stable, time-aware violation events  
+- **System Architecture** — Asynchronous Flask backend with background job processing, integrated with a React (Vite) frontend for seamless upload, processing, and result visualization  
+- **Explainability** — Each violation is fully traceable, with confidence scores, decision strategy (heuristic path), and timestamp intervals for auditability  
+
+SafeSight bridges the gap between **model accuracy and real-world deployability**, transforming raw detections into actionable, interpretable safety insights.
