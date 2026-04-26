@@ -111,17 +111,12 @@ flowchart LR
 
 ### Backend Job Lifecycle
 
-mermaid
-stateDiagram-v2
-    [*] --> queued : POST /api/upload
-    queued --> processing : Background thread starts
-    processing --> processing : Frame-by-frame progress\n(progress 15% → 85%)
-    processing --> done : All frames processed
-    processing --> error : Exception raised
-    done --> [*] : GET /api/results\nGET /api/download
-    error --> [*] : GET /api/status returns error message
 
-    
+![Backend Job Lifecycle](assets/backend-architecture.png)
+
+
+
+
 ## 2. Mathematical Calculations
 
 ### Step 1: Solving for $H$
