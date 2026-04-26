@@ -260,6 +260,8 @@ These metrics drive the adaptive enhancement strategy (CLAHE, gamma correction, 
 
 ## Project Structure
 
+## Project Structure
+
 ```bash
 SafeSight/
 ├── main.py                    # Flask API server + video processing pipeline
@@ -292,6 +294,31 @@ SafeSight/
 │   │
 │   └── package.json
 
+```
+
+## Setup & Installation
+
+### Backend
+
+```bash
+pip install flask flask-cors requests \
+            opencv-python numpy \
+            torch torchvision \
+            albumentations tqdm \
+            pandas seaborn matplotlib \
+            torchmetrics pillow
+
+
+Start the server:
+
+bash
+python main.py
+# API available at http://localhost:5000
+
+
+The model weights are downloaded automatically from Hugging Face on first run if best_model_v4.pth is not found locally.
+
+```
 
 ## Documentation and Articles
 
