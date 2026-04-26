@@ -378,6 +378,30 @@ Produces:
 - *No real-time streaming* — batch video processing only (no RTSP / webcam)
 
 
+## Future Scope
+
+The system can be extended along multiple dimensions:
+
+### 🔹 Model & Intelligence
+- Replace heuristic reasoning with learned relationship models
+- Add anomaly detection for unsafe behaviors beyond helmet violations
+- Improve robustness with domain adaptation and diverse datasets
+
+### 🔹 System & Performance
+- Real-time streaming support (RTSP/WebRTC)
+- Distributed processing with queue-worker architecture
+- Persistent storage for historical analytics
+
+### 🔹 Scalability & Deployment
+- Edge deployment using TensorRT / ONNX for low-latency inference
+- Multi-camera tracking and cross-scene identity consistency
+- Cloud deployment with autoscaling
+
+### 🔹 Product & Usability
+- Interactive analytics dashboard for safety insights
+- Alerting system (email/SMS/webhooks)
+- Role-based access control for enterprise usage
+
 
 ## Documentation and Articles
 
