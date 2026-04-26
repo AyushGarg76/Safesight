@@ -7,6 +7,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
+import requests
 from tqdm import tqdm
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
@@ -127,10 +128,22 @@ def evaluate():
 
     print(f"Loading model from {MODEL_PATH}...")
     model = create_model().to(DEVICE)
+    
     if not os.path.exists(MODEL_PATH):
-        print(f"Model path does not exist: {MODEL_PATH}")
-        return
-        
+        print(f"Model not found locally. Downloading from Hugging Face...")
+        os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+        url = "https://huggingface.co/Spathneja21/fasterRCNN/resolve/main/best_model_v4.pth"
+        try:
+            response = requests.get(url, stream=True)
+            response.raise_for_status()
+            with open(MODEL_PATH, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            print("Model downloaded successfully.")
+        except Exception as e:
+            print(f"WARNING: Failed to download model: {e}")
+            return
+            
     model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
     model.eval()
 

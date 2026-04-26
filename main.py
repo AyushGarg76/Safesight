@@ -25,6 +25,7 @@ import glob
 import threading
 import argparse
 import subprocess
+import requests
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -92,6 +93,20 @@ def get_model():
         in_features = model.roi_heads.box_predictor.cls_score.in_features
         model.roi_heads.box_predictor = FastRCNNPredictor(in_features, NUM_CLASSES)
         model = model.to(DEVICE)
+
+        if not os.path.exists(MODEL_PATH):
+            print(f"[main] Model not found locally. Downloading from Hugging Face...")
+            os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+            url = "https://huggingface.co/Spathneja21/fasterRCNN/resolve/main/best_model_v4.pth"
+            try:
+                response = requests.get(url, stream=True)
+                response.raise_for_status()
+                with open(MODEL_PATH, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                print("[main] Model downloaded successfully.")
+            except Exception as e:
+                print(f"[main] WARNING: Failed to download model: {e}")
 
         if os.path.exists(MODEL_PATH):
             model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
