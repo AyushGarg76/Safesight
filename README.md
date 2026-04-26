@@ -1,5 +1,16 @@
-# Safesight 
+# 🪖 Safesight 
 A project under the course UCS532: Computer vision (3W13)
+
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=flat-square&logo=python)
+![PyTorch](https://img.shields.io/badge/PyTorch-Faster%20R--CNN-orange?style=flat-square&logo=pytorch)
+![Flask](https://img.shields.io/badge/Flask-API%20Backend-lightgrey?style=flat-square&logo=flask)
+![React](https://img.shields.io/badge/React-Vite%20Frontend-61DAFB?style=flat-square&logo=react)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+
+*An end-to-end computer vision system for detecting helmet compliance in video — without YOLO.*
+
 
 ## Overview
 SafeSight is a computer vision–based surveillance system designed to enhance safety by monitoring video streams and detecting critical scenarios such as helmet compliance. The system integrates image processing and real-time analysis to improve automated monitoring.
@@ -8,6 +19,10 @@ This `README.md` is designed to explain the mathematical logic behind your Proje
 
 ---
 
+
+
+
+</div>
 ## Motivation
 Industrial environments like warehouses and factories are high-risk zones where strict safety compliance—such as wearing helmets—is essential. However, manual monitoring is often inconsistent, error-prone, and not scalable across large facilities. As a result, safety violations frequently go unnoticed until accidents occur.
 
