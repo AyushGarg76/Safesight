@@ -12,17 +12,36 @@ A project under the course UCS532: Computer vision (3W13)
 *An end-to-end computer vision system for detecting helmet compliance in video — without YOLO.*
 </div>
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Motivation](#motivation)
+- [Problem Statement](#problem-statement)
+- [Key Idea](#key-idea)
+- [System Architecture](#system-architecture)
+- [Pipeline Walkthrough](#pipeline-walkthrough)
+- [Core Logic: Helmet Reasoning Engine](#core-logic-helmet-reasoning-engine)
+- [Mathematics](#mathematics)
+- [Training Architecture](#training-architecture)
+- [API Reference](#api-reference)
+- [Project Structure](#project-structure)
+- [Setup & Installation](#setup--installation)
+- [Evaluation](#evaluation)
+- [Strengths & Limitations](#strengths--limitations)
+- [Future Work](#future-work)
+
 ## Overview
-SafeSight is a computer vision–based surveillance system designed to enhance safety by monitoring video streams and detecting critical scenarios such as helmet compliance. The system integrates image processing and real-time analysis to improve automated monitoring.
 
-This `README.md` is designed to explain the mathematical logic behind your Projective Transformation code, specifically for an industrial safety context.
+SafeSight is a *multi-stage computer vision pipeline* that processes uploaded videos to detect helmet-compliance violations. It is built without YOLO — instead using *Faster R-CNN* (ResNet-50 FPN backbone) combined with a custom rule-based spatial reasoning engine that infers whether a person is wearing a helmet.
 
----
+The system is not just a model. It includes:
 
+- A trained *Faster R-CNN* detector for helmet, head, and person
+- A *Helmet Reasoning Engine* using IoU-based spatial logic
+- A *Flask REST API* with background job processing
+- A *React / Vite* frontend for upload, progress tracking, and results
+- Optional *image enhancement* pre-processing for low-quality footage
 
-
-
-</div>
 ## Motivation
 Industrial environments like warehouses and factories are high-risk zones where strict safety compliance—such as wearing helmets—is essential. However, manual monitoring is often inconsistent, error-prone, and not scalable across large facilities. As a result, safety violations frequently go unnoticed until accidents occur.
 
