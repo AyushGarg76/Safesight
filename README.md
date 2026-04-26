@@ -358,6 +358,25 @@ Produces:
 - eval_confusion_matrix.png
 ```
 
+## Strengths & Limitations
+
+### Strengths
+
+- *No YOLO dependency* — full control over the detection pipeline
+- *Explainable reasoning* — every violation decision is traceable to a spatial rule
+- *Dual-strategy detection* — direct head signal + IoU cross-check are complementary
+- *Production-style backend* — async job queue, progress polling, file management
+- *Modular design* — reasoning engine is decoupled from inference; easy to swap
+- *Full-stack* — frontend, API, and CV pipeline in one repository
+
+### Limitations
+
+- *No object tracking* — the same person can be counted across multiple frames
+- *Heuristic IoU thresholds* — HEAD_AREA_FRACTION and OVERLAP_IOU_MIN are fixed constants, not learned
+- *No temporal smoothing* — helmet state can flicker frame-to-frame
+- *In-memory job store* — jobs are lost on server restart
+- *No real-time streaming* — batch video processing only (no RTSP / webcam)
+
 ## Documentation and Articles
 
 | Article | Link |
