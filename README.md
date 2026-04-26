@@ -257,6 +257,23 @@ These metrics drive the adaptive enhancement strategy (CLAHE, gamma correction, 
 - Optimizer: SGD with momentum
 - Checkpoint: best validation loss saved to savedmodel/best_model_v4.pth
 - Model source: available on Hugging Face (Spathneja21/fasterRCNN)
+
+## API Reference
+
+The Flask backend exposes four endpoints:
+
+### POST /api/upload
+
+Upload a video and start background processing.
+
+*Request:* multipart/form-data with video field.
+
+*Response:*
+json
+{
+  "job_id": "a3f9bc12",
+  "message": "Processing started"
+}
 ## Documentation and Articles
 
 | Article | Link |
