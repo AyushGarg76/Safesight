@@ -258,73 +258,36 @@ These metrics drive the adaptive enhancement strategy (CLAHE, gamma correction, 
 - Checkpoint: best validation loss saved to savedmodel/best_model_v4.pth
 - Model source: available on Hugging Face (Spathneja21/fasterRCNN)
 
-## API Reference
-
-The Flask backend exposes four endpoints:
-
-### POST /api/upload
-
-Upload a video and start background processing.
-
-*Request:* multipart/form-data with video field.
-
-*Response:*
-json
-{
-  "job_id": "a3f9bc12",
-  "message": "Processing started"
-}
+## Project Structure
 
 
----
+SafeSight/
+├── main.py                          # Flask API server + video processing pipeline
+├── image_enhancement.py             # Adaptive pre-processing (CLAHE, gamma, sharpening)
+├── tranform.py                      # Perspective / bird's-eye transform utility
+│
+├── helmet_withoutyolo/
+│   ├── V2/scripts/
+│   │   ├── train_model_v4.py        # Faster R-CNN training script
+│   │   ├── evaluate_v4.py           # mAP + confusion matrix evaluation
+│   │   ├── no_helmet_detection.py   # Core helmet reasoning engine
+│   │   ├── app_v4.py                # Standalone inference app
+│   │   └── run_all_v4.py            # End-to-end batch runner
+│   ├── savedmodel/
+│   │   └── best_model_v4.pth        # Trained model weights
+│   └── eval_confusion_matrix.png    # Evaluation output
+│
+└── safesight-web/                   # React + Vite frontend
+    ├── src/
+    │   ├── App.jsx
+    │   ├── pages/
+    │   │   ├── Home.jsx             # Landing page
+    │   │   └── Upload.jsx           # Upload + progress + results page
+    │   └── components/
+    │       ├── Navbar.jsx
+    │       └── ViolationsDialog.jsx
+    └── package.json
 
-### GET /api/status/<job_id>
-
-Poll current processing status.
-
-*Response:*
-json
-{
-  "job_id": "a3f9bc12",
-  "status": "processing",
-  "progress": 62,
-  "current_step": 1,
-  "message": "Processing frame 310/500..."
-}
-
-
-Status values: queued → processing → done / error
-
----
-
-### GET /api/results/<job_id>
-
-Retrieve the completed violation report.
-
-*Response:*
-json
-{
-  "job_id": "a3f9bc12",
-  "filename": "site_footage.mp4",
-  "elapsed": 18.4,
-  "total_frames": 500,
-  "total_no_helmet": 23,
-  "violations": [
-    {
-      "time": "00:04 - 00:07",
-      "type": "No Helmet",
-      "severity": "high",
-      "confidence": 87.3
-    }
-  ]
-}
-
-
----
-
-### GET /api/download/<job_id>
-
-Download the annotated output video as safesight_<job_id>_output.mp4.
 
 ## Documentation and Articles
 
