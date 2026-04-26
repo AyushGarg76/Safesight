@@ -219,18 +219,153 @@ Skipped frames reuse the previous detection result.
 
 
 
-### Faster R-CNN Training Loss
+### Part 1 — Faster R-CNN Model Architecture
 
-The model is trained with four combined losses:
+The full inference pipeline is:
 
-**L = L_rpn_cls + L_rpn_box + L_roi_cls + L_roi_box**
+```
+Input Image → ResNet-50 Backbone → FPN → RPN → ROI Align → Detection Head
+```
 
-| Loss | Description |
-|------|-------------|
-| L_rpn_cls | Objectness classification in the Region Proposal Network |
-| L_rpn_box | Proposal box regression |
-| L_roi_cls | Final class prediction (helmet / head / person) |
-| L_roi_box | Final bounding box regression |
+#### 1.1 ResNet-50 Backbone (Feature Extractor)
+
+ResNet-50 extracts spatial features from the input image using **residual blocks**. The core innovation is the **skip connection**, which learns a residual instead of a full mapping:
+
+$$y = F(x,\ \{W_i\}) + x$$
+
+Instead of learning $H(x)$ directly, the network learns the residual $F(x) = H(x) - x$. This solves the **vanishing gradient** problem in deep networks.
+
+ResNet-50 has 50 layers organised into 4 stages of $[3, 4, 6, 3]$ residual blocks. Each stage produces a feature map at a different spatial scale:
+
+| Stage | Stride | Feature Map (800×800 input) |
+|---|---|---|
+| C2 | /4 | 200 × 200 |
+| C3 | /8 | 100 × 100 |
+| C4 | /16 | 50 × 50 |
+| C5 | /32 | 25 × 25 |
+
+#### 1.2 Feature Pyramid Network (FPN)
+
+Helmets vary greatly in size relative to the frame. FPN solves the **multi-scale detection** problem by merging features top-down across all backbone stages:
+
+$$P_n = \text{Conv}_{1\times1}(C_n) + \text{Upsample}(P_{n+1})$$
+
+This gives **semantically strong** (from deep layers) and **spatially precise** (from shallow layers) features at every scale simultaneously. The result is four pyramid levels P2–P5 that the RPN and detection head both operate on.
+
+#### 1.3 Region Proposal Network (RPN)
+
+The RPN slides over every location in each FPN feature map and asks: *"Is there an object here, and where exactly?"*
+
+At each spatial location, **k anchor boxes** are generated (k = 9: 3 scales × 3 aspect ratios). For a 50×50 feature map: $50 \times 50 \times 9 = 22{,}500$ anchors.
+
+For each anchor the RPN outputs two things:
+
+**A) Objectness Score**
+
+$$p^* = \sigma(W_o \cdot f) \in [0, 1]$$
+
+**B) Bounding Box Regression Deltas**
+
+$$t_x = (x - x_a) / w_a \qquad t_y = (y - y_a) / h_a$$
+$$t_w = \log(w / w_a) \qquad t_h = \log(h / h_a)$$
+
+Where $(x_a, y_a, w_a, h_a)$ are anchor coordinates and $(x, y, w, h)$ is the predicted box.
+
+**RPN Loss (multi-task):**
+
+$$\mathcal{L}_{\text{RPN}} = \mathcal{L}_{\text{cls}}(p_i,\ p_i^*) + \lambda \cdot p_i^* \cdot \mathcal{L}_{\text{reg}}(t_i,\ t_i^*)$$
+
+Where $\mathcal{L}_{\text{cls}}$ is **binary cross-entropy**:
+
+$$\mathcal{L}_{\text{cls}} = -\frac{1}{N}\sum_{i=1}^{N} \left[ y_i \cdot \log p(y_i) + (1 - y_i) \cdot \log(1 - p(y_i)) \right]$$
+
+And $\mathcal{L}_{\text{reg}}$ is **Smooth L1 Loss** (more robust than MSE to outliers):
+
+$$L_\delta(x) = \begin{cases} 0.5x^2 & \text{if } |x| < 1 \\ |x| - 0.5 & \text{otherwise} \end{cases}$$
+
+$\lambda = 10$ is the balancing weight between the two losses.
+
+**Non-Maximum Suppression (NMS):** After RPN, ~2000 proposals remain. NMS filters overlapping boxes using IoU — proposals with $\text{IoU} > 0.7$ against a higher-scoring box are discarded.
+
+#### 1.4 ROI Align
+
+Proposals from the RPN have variable sizes, but the detection head needs fixed-size inputs. ROI Align maps each proposal to a fixed **7×7 grid** using **bilinear interpolation** — eliminating the quantization errors of the original ROI Pooling:
+
+$$\text{Variable ROI (e.g., 45×30)} \xrightarrow{\text{ROI Align}} \text{Fixed } 7{\times}7 \text{ feature map}$$
+
+#### 1.5 Detection Head (Box Predictor)
+
+This is the component replaced in the SafeSight code:
+
+```python
+model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+```
+
+Two FC layers produce:
+
+$$\text{Class Scores:} \quad scores = \text{FC}(\text{features}) \quad \rightarrow \text{shape: } [N,\ \text{num\_classes}]$$
+$$\text{Box Deltas:} \quad deltas = \text{FC}(\text{features}) \quad \rightarrow \text{shape: } [N,\ \text{num\_classes} \times 4]$$
+
+**Detection Head Loss:**
+
+$$\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{cls}} + \mathcal{L}_{\text{box\_reg}}$$
+
+$$\mathcal{L}_{\text{cls}} = \text{CrossEntropy}(\text{class\_scores},\ \text{true\_labels})$$
+
+$$\mathcal{L}_{\text{box\_reg}} = \text{SmoothL1}(\text{predicted\_deltas},\ \text{target\_deltas}) \quad \text{[positives only]}$$
+
+**Transfer Learning Strategy:** The ResNet-50 backbone, FPN, and RPN are initialised with ImageNet pretrained weights and kept largely frozen. Only the `FastRCNNPredictor` head is trained from scratch on the helmet dataset. This allows powerful general feature extraction to persist while adapting the final classification to `helmet / head / person`.
+
+> **Note:** `num_classes = 4` because class `0` is always reserved for background, so: `background + helmet + head + person = 4`.
+
+---
+
+### Part 2 — SafeSight Reasoning Engine Mathematics
+
+#### 2.1 Intersection over Union (IoU)
+
+$$IoU(A, B) = \frac{|A \cap B|}{|A \cup B|}$$
+
+Used in two places: (1) evaluation — comparing predicted boxes to ground truth, and (2) the helmet-head overlap check in the reasoning engine.
+
+#### 2.2 Head Region Approximation
+
+For a person box $P = (x_1, y_1, x_2, y_2)$ with height $h = y_2 - y_1$:
+
+$$H = (x_1,\ y_1,\ x_2,\ y_1 + \alpha h), \quad \alpha = 0.40$$
+
+The top 40% of the person bounding box is used as a proxy for where the head should be.
+
+#### 2.3 No-Helmet Confidence Score
+
+$$O_{\max} = \max_j\ IoU(H,\ \text{Helmet}_j)$$
+
+$$C_{\text{no-helmet}} = 1 - O_{\max}$$
+
+A violation is flagged when $O_{\max} < 0.10$. If no helmet overlaps the head region at all, $C_{\text{no-helmet}} = 1.0$ (certain violation).
+
+#### 2.4 Frame Skipping
+
+$$f_k\ \text{is processed if}\ k \bmod n = 0, \quad n = \texttt{FRAME\_SKIP} = 5$$
+
+Skipped frames reuse the previous frame's detections for annotation, giving a 5× speedup with negligible visual difference.
+
+---
+
+### Part 3 — Image Quality Metrics (Enhancement Module)
+
+For a grayscale frame with pixel intensities $I_i$ over $N$ total pixels:
+
+$$\mu = \frac{1}{N}\sum_{i=1}^{N} I_i \qquad \text{(mean brightness)}$$
+
+$$\sigma = \sqrt{\frac{1}{N}\sum_{i=1}^{N}(I_i - \mu)^2} \qquad \text{(contrast)}$$
+
+$$SR = \frac{1}{N}\sum_{i=1}^{N}\mathbf{1}(I_i < 50) \qquad \text{(shadow ratio)}$$
+
+$$B = \mathrm{Var}(\nabla^2 I) \qquad \text{(blur score via Laplacian variance)}$$
+
+These four metrics drive an adaptive preprocessing decision — CLAHE for high shadow ratio, gamma correction for brightness issues, sharpening for low blur score, and histogram equalisation for low contrast — applied before model inference to improve detection quality on challenging footage.
+
 
 ### Image Quality Metrics (Enhancement Module)
 
