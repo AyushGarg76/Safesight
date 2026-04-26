@@ -16,7 +16,7 @@ helmet_withoutyolo/helmet-detection-system/
 image_enhancement_functions/model/
 helmet_withoutyolo/V2/outputs_v4/
 helmet_withoutyolo/V2/scripts/test_videos/
-uploads\
+uploads/
 helmet_withoutyolo/dataset/archive/
 
 *.pt
