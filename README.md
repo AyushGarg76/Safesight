@@ -47,7 +47,7 @@ Industrial environments like warehouses and factories are high-risk zones where 
 
 SafeSight automates safety monitoring using computer vision to detect helmet compliance in real time. It enables continuous surveillance through existing camera systems, reduces reliance on manual supervision, and improves overall workplace safety efficiently.
 
----
+
 
 ## Problem Statement
 
@@ -67,7 +67,7 @@ The detection problem itself is hard:
 
 *Goal:* Build an automated system that detects violations, annotates the video, and returns a structured report through an API — fast enough for practical use and explainable enough to debug.
 
----
+
 
 
 
@@ -85,11 +85,29 @@ The model is trained to detect three objects:
 
 The *Helmet Reasoning Engine* then interprets these detections using two complementary rules, combining them to produce a final violation decision per person per frame.
 
----
 
+## System Architecture
 
-## 1. Projective Transformation (Homography)
-In a standard camera view, parallel lines (like floor markings) appear to converge at a vanishing point. To fix this, we use a **Homography Matrix ($H$)**. This is a $3 \times 3$ matrix that maps points from the source plane (Camera) to the destination plane (Ground Map).
+### High-Level System Design
+
+mermaid
+flowchart LR
+    U[👤 User] --> FE[React / Vite\nFrontend]
+    FE -->|POST /api/upload| API[Flask API\nServer]
+
+    API --> JM[Job Manager\nuuid + threading]
+    JM --> VP[Video Processor\nBackground Thread]
+
+    VP --> FS[Frame Sampler\nframe_idx % FRAME_SKIP]
+    FS --> PRE[Pre-processing\nBGR→RGB, Resize, Normalize]
+    PRE --> DET[Faster R-CNN\nResNet-50 FPN]
+
+    DET --> LOGIC[Helmet Reasoning\nEngine]
+    LOGIC --> AGG[Violation\nAggregator]
+    AGG --> OUT[Annotated Video\n+ JSON Report]
+
+    OUT --> API
+    API -->|GET /api/results| FE
 
 ### The Homography Matrix
 The matrix $H$ has 8 degrees of freedom:
