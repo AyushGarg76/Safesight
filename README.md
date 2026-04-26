@@ -274,6 +274,58 @@ json
   "job_id": "a3f9bc12",
   "message": "Processing started"
 }
+
+
+---
+
+### GET /api/status/<job_id>
+
+Poll current processing status.
+
+*Response:*
+json
+{
+  "job_id": "a3f9bc12",
+  "status": "processing",
+  "progress": 62,
+  "current_step": 1,
+  "message": "Processing frame 310/500..."
+}
+
+
+Status values: queued → processing → done / error
+
+---
+
+### GET /api/results/<job_id>
+
+Retrieve the completed violation report.
+
+*Response:*
+json
+{
+  "job_id": "a3f9bc12",
+  "filename": "site_footage.mp4",
+  "elapsed": 18.4,
+  "total_frames": 500,
+  "total_no_helmet": 23,
+  "violations": [
+    {
+      "time": "00:04 - 00:07",
+      "type": "No Helmet",
+      "severity": "high",
+      "confidence": 87.3
+    }
+  ]
+}
+
+
+---
+
+### GET /api/download/<job_id>
+
+Download the annotated output video as safesight_<job_id>_output.mp4.
+
 ## Documentation and Articles
 
 | Article | Link |
