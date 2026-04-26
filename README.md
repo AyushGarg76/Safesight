@@ -309,15 +309,53 @@ pip install flask flask-cors requests \
             torchmetrics pillow
 
 
+```
+
 Start the server:
 
-bash
+
+```bash
 python main.py
 # API available at http://localhost:5000
 
 
 The model weights are downloaded automatically from Hugging Face on first run if best_model_v4.pth is not found locally.
 
+```
+
+### Frontend
+
+```bash
+cd safesight-web
+npm install
+npm run dev
+# Dev server at http://localhost:5173
+
+
+```
+
+### Training (optional)
+
+1. Place images in dataset/archive/images/
+2. Place Pascal VOC XML annotations in dataset/archive/annotations/
+3. Run training:
+
+```bash
+python helmet_withoutyolo/V2/scripts/train_model_v4.py
+```
+
+## Evaluation
+
+```bash
+python helmet_withoutyolo/V2/scripts/evaluate_v4.py
+
+
+Produces:
+
+- Mean Average Precision (mAP)
+- mAP@0.50 and mAP@0.75
+- Per-class precision, recall, and F1
+- eval_confusion_matrix.png
 ```
 
 ## Documentation and Articles
