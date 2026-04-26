@@ -287,17 +287,14 @@ Proposals from the RPN have variable sizes, but the detection head needs fixed-s
 
 $$\text{Variable ROI (e.g., 45×30)} \xrightarrow{\text{ROI Align}} \text{Fixed } 7{\times}7 \text{ feature map}$$
 
-#### 1.5 Detection Head (Box Predictor)
-
-
+### 1.5 Detection Head (Box Predictor)
 
 This is the component replaced in the SafeSight code:
 
 ```python
 model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
-
+```
 
 
 **Transfer Learning Strategy:** The ResNet-50 backbone, FPN, and RPN are initialised with ImageNet pretrained weights and kept largely frozen. Only the `FastRCNNPredictor` head is trained from scratch on the helmet dataset. This allows powerful general feature extraction to persist while adapting the final classification to `helmet / head / person`.
