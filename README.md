@@ -185,29 +185,8 @@ If IoU = 0.9 (helmet fully covers head region), confidence = 0.1 (likely complia
 
 ## Mathematics
 
-### Intersection over Union (IoU)
 
-For two bounding boxes $A$ and $B$:
 
-$$IoU(A, B) = \frac{|A \cap B|}{|A \cup B|}$$
-
-Where $|A \cap B|$ is the intersection area and $|A \cup B|$ is the union area. Used in two places: detection evaluation and helmet-head overlap checking.
-
-### Head Region Approximation
-
-For a person box $P = (x_1, y_1, x_2, y_2)$ with height $h = y_2 - y_1$:
-
-$$H = (x_1,\ y_1,\ x_2,\ y_1 + \alpha h), \quad \alpha = 0.40$$
-
-The top 40% of the person box is treated as the expected head location.
-
-### No-Helmet Confidence Score
-
-$$O_{max} = \max_j\ IoU(H,\ \text{Helmet}_j)$$
-
-$$C_{\text{no-helmet}} = 1 - O_{max}$$
-
-A violation is flagged when $O_{max} < 0.10$.
 
 
 
@@ -351,19 +330,7 @@ $$B = \mathrm{Var}(\nabla^2 I) \qquad \text{(blur score via Laplacian variance)}
 These four metrics drive an adaptive preprocessing decision — CLAHE for high shadow ratio, gamma correction for brightness issues, sharpening for low blur score, and histogram equalisation for low contrast — applied before model inference to improve detection quality on challenging footage.
 
 
-### Image Quality Metrics (Enhancement Module)
 
-For a grayscale frame with pixel intensities $I_i$ over $N$ pixels:
-
-$$\mu = \frac{1}{N}\sum_{i=1}^{N} I_i \qquad \text{(mean brightness)}$$
-
-$$\sigma = \sqrt{\frac{1}{N}\sum_{i=1}^{N}(I_i - \mu)^2} \qquad \text{(contrast)}$$
-
-$$SR = \frac{1}{N}\sum_{i=1}^{N}\mathbf{1}(I_i < 50) \qquad \text{(shadow ratio)}$$
-
-$$B = \mathrm{Var}(\nabla^2 I) \qquad \text{(blur score via Laplacian variance)}$$
-
-These metrics drive the adaptive enhancement strategy (CLAHE, gamma correction, sharpening, histogram equalization) applied before model inference.
 
 ## Training Architecture
 ![Training Architecture](./assests/training_archit.png)
