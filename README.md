@@ -182,6 +182,33 @@ no_helmet_confidence = 1.0 - max_overlap_iou
 If IoU = 0.0 (no helmet anywhere near), confidence = 1.0 (certain violation).
 If IoU = 0.9 (helmet fully covers head region), confidence = 0.1 (likely compliant).
 
+
+## Mathematics
+
+### Intersection over Union (IoU)
+
+For two bounding boxes $A$ and $B$:
+
+$$IoU(A, B) = \frac{|A \cap B|}{|A \cup B|}$$
+
+Where $|A \cap B|$ is the intersection area and $|A \cup B|$ is the union area. Used in two places: detection evaluation and helmet-head overlap checking.
+
+### Head Region Approximation
+
+For a person box $P = (x_1, y_1, x_2, y_2)$ with height $h = y_2 - y_1$:
+
+$$H = (x_1,\ y_1,\ x_2,\ y_1 + \alpha h), \quad \alpha = 0.40$$
+
+The top 40% of the person box is treated as the expected head location.
+
+### No-Helmet Confidence Score
+
+$$O_{max} = \max_j\ IoU(H,\ \text{Helmet}_j)$$
+
+$$C_{\text{no-helmet}} = 1 - O_{max}$$
+
+A violation is flagged when $O_{max} < 0.10$.
+
 ## Documentation and Articles
 
 | Article | Link |
