@@ -17,6 +17,7 @@ A project under the course UCS532: Computer vision (3W13)
 - [Overview](#overview)
 - [Motivation](#motivation)
 - [Problem Statement](#problem-statement)
+- [Dataset](#dataset)
 - [Key Idea](#key-idea)
 - [System Architecture](#system-architecture)
 - [Pipeline Walkthrough](#pipeline-walkthrough)
@@ -68,7 +69,8 @@ The detection problem itself is hard:
 *Goal:* Build an automated system that detects violations, annotates the video, and returns a structured report through an API — fast enough for practical use and explainable enough to debug.
 
 
-
+## Dataset
+https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection/data
 
 
 ## Key Idea
