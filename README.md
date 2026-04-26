@@ -109,21 +109,19 @@ flowchart LR
     OUT --> API
     API -->|GET /api/results| FE
 
-### The Homography Matrix
-The matrix $H$ has 8 degrees of freedom:
+### Backend Job Lifecycle
 
-$$
-H = \begin{bmatrix} 
-h_{11} & h_{12} & h_{13} \\\\ 
-h_{21} & h_{22} & h_{23} \\\\ 
-h_{31} & h_{32} & 1 
-\end{bmatrix}
-$$
+mermaid
+stateDiagram-v2
+    [*] --> queued : POST /api/upload
+    queued --> processing : Background thread starts
+    processing --> processing : Frame-by-frame progress\n(progress 15% → 85%)
+    processing --> done : All frames processed
+    processing --> error : Exception raised
+    done --> [*] : GET /api/results\nGET /api/download
+    error --> [*] : GET /api/status returns error message
 
-* **Top-left $2 \times 2$**: Handles rotation, scaling, and shearing.
-* **Third Column**: Handles translation ($x, y$ shifts).
-* **Bottom Row**: Handles the perspective warp (making lines parallel again).
-
+    
 ## 2. Mathematical Calculations
 
 ### Step 1: Solving for $H$
