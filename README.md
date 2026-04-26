@@ -100,7 +100,7 @@ The *Helmet Reasoning Engine* then interprets these detections using two complem
 ### Backend Job Lifecycle
 
 
-![Backend Job Lifecycle](/assets/backend-architecture.png)
+![Backend Job Lifecycle](./assests/backend_flowchart.png)
 
 
 
