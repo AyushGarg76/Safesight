@@ -90,29 +90,17 @@ The *Helmet Reasoning Engine* then interprets these detections using two complem
 
 ### High-Level System Design
 
-mermaid
-flowchart LR
-    U[👤 User] --> FE[React / Vite\nFrontend]
-    FE -->|POST /api/upload| API[Flask API\nServer]
+![System Architecture](./assests/system_archit.png)
 
-    API --> JM[Job Manager\nuuid + threading]
-    JM --> VP[Video Processor\nBackground Thread]
+### Detailed Processing Flow
 
-    VP --> FS[Frame Sampler\nframe_idx % FRAME_SKIP]
-    FS --> PRE[Pre-processing\nBGR→RGB, Resize, Normalize]
-    PRE --> DET[Faster R-CNN\nResNet-50 FPN]
 
-    DET --> LOGIC[Helmet Reasoning\nEngine]
-    LOGIC --> AGG[Violation\nAggregator]
-    AGG --> OUT[Annotated Video\n+ JSON Report]
-
-    OUT --> API
-    API -->|GET /api/results| FE
+![Detailed Processing Flow](./assests/detailed_process.png)
 
 ### Backend Job Lifecycle
 
 
-![Backend Job Lifecycle](/assets/backend-architecture.png)
+![Backend Job Lifecycle](./assests/backend_flowchart.png)
 
 
 
