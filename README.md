@@ -267,19 +267,20 @@ Where $(x_a, y_a, w_a, h_a)$ are anchor coordinates and $(x, y, w, h)$ is the pr
 
 **RPN Loss (multi-task):**
 
-$$\mathcal{L}_{\text{RPN}} = \mathcal{L}_{\text{cls}}(p_i,\ p_i^*) + \lambda \cdot p_i^* \cdot \mathcal{L}_{\text{reg}}(t_i,\ t_i^*)$$
+```text
+L_RPN = L_cls + λ * L_reg
+Where:
+L_cls = BinaryCrossEntropy(p_i, p_i*)
+L_reg = SmoothL1(t_i, t_i*)
+Expanded form
+L_RPN = BinaryCrossEntropy(p_i, p_i*) + λ * SmoothL1(t_i, t_i*)
 
-Where $\mathcal{L}_{\text{cls}}$ is **binary cross-entropy**:
-
-$$\mathcal{L}_{\text{cls}} = -\frac{1}{N}\sum_{i=1}^{N} \left[ y_i \cdot \log p(y_i) + (1 - y_i) \cdot \log(1 - p(y_i)) \right]$$
-
-And $\mathcal{L}_{\text{reg}}$ is **Smooth L1 Loss** (more robust than MSE to outliers):
-
-$$L_\delta(x) = \begin{cases} 0.5x^2 & \text{if } |x| < 1 \\ |x| - 0.5 & \text{otherwise} \end{cases}$$
-
-$\lambda = 10$ is the balancing weight between the two losses.
-
+SmoothL1(x) =
+    0.5 * x^2        if |x| < 1
+    |x| - 0.5        otherwise
+```
 **Non-Maximum Suppression (NMS):** After RPN, ~2000 proposals remain. NMS filters overlapping boxes using IoU — proposals with $\text{IoU} > 0.7$ against a higher-scoring box are discarded.
+
 
 #### 1.4 ROI Align
 
