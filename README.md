@@ -211,9 +211,9 @@ A violation is flagged when $O_{max} < 0.10$.
 
 ### Frame Skipping
 
-Only frames satisfying the following are processed by the model:
+Only frames satisfying the following condition are processed by the model:
 
-$$f_k\ \text{is processed if}\ k \bmod n = 0, \quad n = \texttt{FRAME\_SKIP} = 5$$
+**k mod n = 0**, where **n = FRAME_SKIP**
 
 Skipped frames reuse the previous detection result.
 
