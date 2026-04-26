@@ -4,13 +4,13 @@ import './Home.css';
 const features = [
     {
         icon: '⊡',
-        title: 'Real-Time Detection',
-        desc: 'YOLO-powered detection identifies workers, equipment, and potential hazards frame-by-frame from live CCTV feeds.',
+        title: 'Faster R-CNN Detection',
+        desc: 'A ResNet-50 FPN backbone trained specifically to identify persons, helmets, and bare heads without relying on YOLO.',
     },
     {
         icon: '◫',
-        title: "Bird's-Eye Mapping",
-        desc: 'Projective transforms convert oblique camera angles into accurate top-down ground-plane maps using homography matrices.',
+        title: 'Spatial Reasoning',
+        desc: 'Interprets bounding boxes using deterministic IoU-based logic to confidently infer whether a worker\'s head is protected.',
     },
     {
         icon: '◈',
@@ -21,34 +21,49 @@ const features = [
 
 const steps = [
     {
-        title: 'Upload Footage',
-        desc: 'Drop in your CCTV video files for analysis.',
+        title: 'Upload & Job Creation',
+        desc: 'Video is uploaded through the frontend, initiating a background processing daemon on the Flask API.',
     },
     {
-        title: 'Frame Enhancement',
-        desc: 'Each frame is adaptively enhanced based on brightness, contrast, and blur metrics.',
+        title: 'Frame Sampling',
+        desc: 'To ensure efficiency, video frames are selectively sampled to reduce inference calls without losing context.',
     },
     {
-        title: 'Object Detection',
-        desc: 'YOLO identifies workers, helmets, vests, and restricted equipment in every frame.',
+        title: 'Batch Inference',
+        desc: 'Sampled frames are processed by a custom Faster R-CNN model to detect persons, helmets, and bare heads.',
     },
     {
-        title: 'Perspective Transform',
-        desc: 'A 3×3 homography matrix maps detections from camera space to the real-world ground plane.',
+        title: 'Helmet Reasoning Engine',
+        desc: 'Uses direct head detection and person-helmet IoU cross-checks to identify helmet compliance violations.',
     },
     {
-        title: 'Violation Alerts',
-        desc: 'Zone boundaries are checked against mapped positions. Violations generate timestamped reports.',
+        title: 'Annotation & Aggregation',
+        desc: 'Violations are visually annotated on the video and grouped into concise, timestamped summary reports.',
+    },
+];
+
+const modelDetails = [
+    {
+        title: 'ResNet-50 Backbone',
+        desc: 'Extracts robust spatial features using 50 layers of residual blocks. Initialized with ImageNet weights to leverage generalized feature representations.',
+    },
+    {
+        title: 'Feature Pyramid Network (FPN)',
+        desc: 'Solves the multi-scale detection problem by merging features top-down, crucial for detecting small helmets at various camera depths.',
+    },
+    {
+        title: 'Custom Detection Head',
+        desc: 'The FastRCNNPredictor is fine-tuned from scratch to specifically classify three distinct objects: persons, helmets, and bare heads.',
     },
 ];
 
 const techStack = [
     'Python',
-    'OpenCV',
-    'YOLOv8',
-    'NumPy',
+    'PyTorch',
+    'Faster R-CNN',
+    'Flask',
     'React',
-    'Homography',
+    'OpenCV',
 ];
 
 export default function Home() {
@@ -70,9 +85,9 @@ export default function Home() {
                             <span className="highlight">industrial environments.</span>
                         </h1>
                         <p className="hero-desc">
-                            Safesight transforms standard CCTV footage into actionable safety
-                            intelligence — detecting workers, mapping positions to real-world
-                            coordinates, and flagging zone violations in real time.
+                            SafeSight transforms standard CCTV footage into actionable safety
+                            intelligence — utilizing Faster R-CNN and spatial reasoning to detect
+                            helmet compliance and flag violations automatically.
                         </p>
                         <div className="hero-actions">
                             <Link to="/upload" className="btn btn-primary">
@@ -124,6 +139,25 @@ export default function Home() {
                                     <h3>{s.title}</h3>
                                     <p>{s.desc}</p>
                                 </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* ── Model Architecture ── */}
+            <section className="section" id="model-architecture">
+                <div className="container">
+                    <p className="section-label">Deep Learning</p>
+                    <h2 className="section-title">Faster R-CNN ResNet-50 FPN</h2>
+                    <p className="section-subtitle">
+                        Under the hood, the system is powered by a state-of-the-art Faster R-CNN object detector tailored for workplace safety.
+                    </p>
+                    <div className="features-grid">
+                        {modelDetails.map((m, i) => (
+                            <div className="card feature-card" key={i}>
+                                <h3>{m.title}</h3>
+                                <p>{m.desc}</p>
                             </div>
                         ))}
                     </div>
