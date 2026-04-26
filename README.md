@@ -258,73 +258,105 @@ These metrics drive the adaptive enhancement strategy (CLAHE, gamma correction, 
 - Checkpoint: best validation loss saved to savedmodel/best_model_v4.pth
 - Model source: available on Hugging Face (Spathneja21/fasterRCNN)
 
-## API Reference
+## Project Structure
 
-The Flask backend exposes four endpoints:
+## Project Structure
 
-### POST /api/upload
+```bash
+SafeSight/
+├── main.py                    # Flask API server + video processing pipeline
+├── image_enhancement.py       # Adaptive pre-processing (CLAHE, gamma, sharpening)
+├── tranform.py                # Perspective / bird's-eye transform utility
 
-Upload a video and start background processing.
+├── helmet_withoutyolo/
+│   ├── V2/scripts/
+│   │   ├── train_model_v4.py      # Faster R-CNN training script
+│   │   ├── evaluate_v4.py         # mAP + confusion matrix evaluation
+│   │   ├── no_helmet_detection.py # Core helmet reasoning engine
+│   │   ├── app_v4.py              # Standalone inference app
+│   │   └── run_all_v4.py          # End-to-end batch runner
+│   │
+│   ├── savedmodel/
+│   │   └── best_model_v4.pth      # Trained model weights
+│   │
+│   └── eval_confusion_matrix.png  # Evaluation output
 
-*Request:* multipart/form-data with video field.
+├── safesight-web/                # React + Vite frontend
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── pages/
+│   │   │   ├── Home.jsx          # Landing page
+│   │   │   └── Upload.jsx        # Upload + progress + results page
+│   │   │
+│   │   └── components/
+│   │       ├── Navbar.jsx
+│   │       └── ViolationsDialog.jsx
+│   │
+│   └── package.json
 
-*Response:*
-json
-{
-  "job_id": "a3f9bc12",
-  "message": "Processing started"
-}
+```
 
+## Setup & Installation
 
----
+### Backend
 
-### GET /api/status/<job_id>
-
-Poll current processing status.
-
-*Response:*
-json
-{
-  "job_id": "a3f9bc12",
-  "status": "processing",
-  "progress": 62,
-  "current_step": 1,
-  "message": "Processing frame 310/500..."
-}
-
-
-Status values: queued → processing → done / error
-
----
-
-### GET /api/results/<job_id>
-
-Retrieve the completed violation report.
-
-*Response:*
-json
-{
-  "job_id": "a3f9bc12",
-  "filename": "site_footage.mp4",
-  "elapsed": 18.4,
-  "total_frames": 500,
-  "total_no_helmet": 23,
-  "violations": [
-    {
-      "time": "00:04 - 00:07",
-      "type": "No Helmet",
-      "severity": "high",
-      "confidence": 87.3
-    }
-  ]
-}
+```bash
+pip install flask flask-cors requests \
+            opencv-python numpy \
+            torch torchvision \
+            albumentations tqdm \
+            pandas seaborn matplotlib \
+            torchmetrics pillow
 
 
----
+```
 
-### GET /api/download/<job_id>
+Start the server:
 
-Download the annotated output video as safesight_<job_id>_output.mp4.
+
+```bash
+python main.py
+# API available at http://localhost:5000
+
+
+The model weights are downloaded automatically from Hugging Face on first run if best_model_v4.pth is not found locally.
+
+```
+
+### Frontend
+
+```bash
+cd safesight-web
+npm install
+npm run dev
+# Dev server at http://localhost:5173
+
+
+```
+
+### Training (optional)
+
+1. Place images in dataset/archive/images/
+2. Place Pascal VOC XML annotations in dataset/archive/annotations/
+3. Run training:
+
+```bash
+python helmet_withoutyolo/V2/scripts/train_model_v4.py
+```
+
+## Evaluation
+
+```bash
+python helmet_withoutyolo/V2/scripts/evaluate_v4.py
+
+
+Produces:
+
+- Mean Average Precision (mAP)
+- mAP@0.50 and mAP@0.75
+- Per-class precision, recall, and F1
+- eval_confusion_matrix.png
+```
 
 ## Documentation and Articles
 
