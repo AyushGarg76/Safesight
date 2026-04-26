@@ -18,6 +18,7 @@ helmet_withoutyolo/V2/outputs_v4/
 helmet_withoutyolo/V2/scripts/test_videos/
 uploads\
 helmet_withoutyolo/dataset/archive/
+helmet_withoutyolo/savedmodel/
 
 *.pt
 *.pth
