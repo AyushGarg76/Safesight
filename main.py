@@ -5,8 +5,8 @@ Flask API server that integrates the V4 Faster R-CNN helmet-detection
 pipeline so the safesight-web frontend can trigger processing via HTTP.
 
 Endpoints:
-    POST  /api/upload          – upload a video, start processing
-    GET   /api/status/<job_id> – poll for progress
+    POST  /api/upload            – upload a video, start processing
+    GET   /api/status/<job_id>   – poll for progress
     GET   /api/download/<job_id> – download the annotated result video
     GET   /api/results/<job_id>  – get violation summary JSON
 
@@ -51,9 +51,10 @@ NUM_CLASSES    = 4
 CLASS_NAMES    = ['__background__', 'helmet', 'head', 'person']
 THRESHOLD      = 0.5
 DEVICE         = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-INFERENCE_SIZE = (320, 320)
-FRAME_SKIP     = 2
-BATCH_SIZE     = 4
+INFERENCE_SIZE = (256, 256)  # Reduced from 320x320 for speed
+FRAME_SKIP     = 5           # Process 1 in 5 frames instead of 1 in 2
+BATCH_SIZE     = 8           # Process more frames at once if GPU allows
+
 
 MODEL_PATH = os.path.join(PROJECT_ROOT, 'helmet_withoutyolo', 'savedmodel', 'best_model_v4.pth')
 
@@ -476,8 +477,8 @@ def main():
 
         # Pre-load model at startup so first request is faster
         get_model()
-
-        app.run(host='0.0.0.0', port=args.port, debug=False)
+        app.run(debug=True, port=5000)
+        # app.run(host='0.0.0.0', port=args.port, debug=False)
 
 
 if __name__ == "__main__":
