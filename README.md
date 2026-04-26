@@ -209,13 +209,7 @@ $$C_{\text{no-helmet}} = 1 - O_{max}$$
 
 A violation is flagged when $O_{max} < 0.10$.
 
-### Frame Skipping
 
-Only frames satisfying the following condition are processed by the model:
-
-**k mod n = 0**, where **n = FRAME_SKIP**
-
-Skipped frames reuse the previous detection result.
 
 
 
@@ -295,24 +289,16 @@ $$\text{Variable ROI (e.g., 45×30)} \xrightarrow{\text{ROI Align}} \text{Fixed 
 
 #### 1.5 Detection Head (Box Predictor)
 
+
+
 This is the component replaced in the SafeSight code:
 
 ```python
 model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-```
+model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
-Two FC layers produce:
 
-$$\text{Class Scores:} \quad scores = \text{FC}(\text{features}) \quad \rightarrow \text{shape: } [N,\ \text{num\_classes}]$$
-$$\text{Box Deltas:} \quad deltas = \text{FC}(\text{features}) \quad \rightarrow \text{shape: } [N,\ \text{num\_classes} \times 4]$$
 
-**Detection Head Loss:**
-
-$$\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{cls}} + \mathcal{L}_{\text{box\_reg}}$$
-
-$$\mathcal{L}_{\text{cls}} = \text{CrossEntropy}(\text{class\_scores},\ \text{true\_labels})$$
-
-$$\mathcal{L}_{\text{box\_reg}} = \text{SmoothL1}(\text{predicted\_deltas},\ \text{target\_deltas}) \quad \text{[positives only]}$$
 
 **Transfer Learning Strategy:** The ResNet-50 backbone, FPN, and RPN are initialised with ImageNet pretrained weights and kept largely frozen. Only the `FastRCNNPredictor` head is trained from scratch on the helmet dataset. This allows powerful general feature extraction to persist while adapting the final classification to `helmet / head / person`.
 
@@ -346,11 +332,11 @@ A violation is flagged when $O_{\max} < 0.10$. If no helmet overlaps the head re
 
 #### 2.4 Frame Skipping
 
-$$f_k\ \text{is processed if}\ k \bmod n = 0, \quad n = \texttt{FRAME\_SKIP} = 5$$
+Only frames satisfying the following condition are processed by the model:
 
-Skipped frames reuse the previous frame's detections for annotation, giving a 5× speedup with negligible visual difference.
+**k mod n = 0**, where **n = FRAME_SKIP**
 
----
+Skipped frames reuse the previous detection result.
 
 ### Part 3 — Image Quality Metrics (Enhancement Module)
 
