@@ -47,21 +47,45 @@ Industrial environments like warehouses and factories are high-risk zones where 
 
 SafeSight automates safety monitoring using computer vision to detect helmet compliance in real time. It enables continuous surveillance through existing camera systems, reduces reliance on manual supervision, and improves overall workplace safety efficiently.
 
-## Key Features
-🎥 Real-Time Monitoring: 
-Processes live video streams from CCTV/IP cameras to enable continuous surveillance of industrial environments.
+---
 
-🪖 Helmet Detection:
- Automatically detects whether workers are wearing safety helmets, ensuring compliance with safety protocols.
+## Problem Statement
 
-⚡ Automated Surveillance: 
-Eliminates the need for constant manual supervision by providing consistent, 24/7 monitoring.
+In safety-critical environments — construction sites, factories, roads — monitoring helmet compliance from CCTV or recorded video manually is:
 
-🧠 Image Enhancement:
- Applies preprocessing techniques such as noise reduction and contrast improvement to enhance detection accuracy.
+- *Slow* — hours of footage per inspector
+- *Error-prone* — fatigue causes missed violations
+- *Not scalable* — grows linearly with camera count
 
-🏭 Industrial-Ready Design: 
-Built specifically for deployment in warehouses, factories, and production units, addressing real-world safety challenges.
+The detection problem itself is hard:
+
+- The same person appears across hundreds of frames
+- Helmets can be partially occluded
+- Lighting conditions vary drastically
+- Heads are often small relative to the full frame
+- Raw detections must be converted into meaningful, timestamped violation events
+
+*Goal:* Build an automated system that detects violations, annotates the video, and returns a structured report through an API — fast enough for practical use and explainable enough to debug.
+
+---
+
+
+
+## Key Idea
+
+> Instead of detecting helmets with YOLO, use *Faster R-CNN + Spatial Reasoning*.
+
+The model is trained to detect three objects:
+
+| Class | Meaning |
+|---|---|
+| helmet | A helmet visible in the frame |
+| head | A bare head (no helmet visible) |
+| person | A person's full body |
+
+The *Helmet Reasoning Engine* then interprets these detections using two complementary rules, combining them to produce a final violation decision per person per frame.
+
+---
 
 
 ## 1. Projective Transformation (Homography)
