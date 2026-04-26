@@ -112,7 +112,7 @@ flowchart LR
 ### Backend Job Lifecycle
 
 
-![Backend Job Lifecycle](assets/backend-architecture.png)
+![Backend Job Lifecycle](./assets/backend-architecture.png)
 
 
 
