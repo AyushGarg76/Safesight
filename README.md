@@ -248,6 +248,15 @@ These metrics drive the adaptive enhancement strategy (CLAHE, gamma correction, 
 
 ## Training Architecture
 ![Training Architecture](./assests/training_archit.png)
+
+*Training details:*
+
+- Dataset split: 90% train / 10% validation
+- Annotation format: Pascal VOC XML
+- Augmentations: resize, horizontal flip, brightness/contrast jitter
+- Optimizer: SGD with momentum
+- Checkpoint: best validation loss saved to savedmodel/best_model_v4.pth
+- Model source: available on Hugging Face (Spathneja21/fasterRCNN)
 ## Documentation and Articles
 
 | Article | Link |
