@@ -22,6 +22,10 @@ helmet_withoutyolo/savedmodel/
 
 *.pt
 *.pth
+*.mp4
+*.avi
+*.mov
+!.gitignore
 *.zipV2/data/processed.zip
 V2/data/processed.zip
 V2/data/processed.zip
