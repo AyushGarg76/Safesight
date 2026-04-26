@@ -161,6 +161,39 @@ The frames are written in order to an mp4v output file.
 Individual frame violations are grouped by timestamp. Consecutive seconds are merged into ranges (e.g., 00:12 - 00:15), giving a clean, human-readable violation report.
 
 
+## Core Logic: Helmet Reasoning Engine
+
+The heart of the project is no_helmet_detection.py. It converts raw bounding boxes into safety decisions using two complementary strategies
+
+![Core Logic](./assests/core_logic.png)
+
+### Strategy 1 — Direct Head Detection
+
+The model was trained with a head class that specifically represents a bare (unprotected) head. Any head prediction above the confidence threshold is directly flagged as a violation.
+
+- *Advantage:* Fast, no extra computation
+- *Limitation:* Depends on model being confident about distinguishing head from helmet
+
+### Strategy 2 — IoU-Based Person-Helmet Cross-Check
+
+For each person box:
+
+1. Extract the *head region* — top 40% of the person bounding box
+2. Compute *IoU* between this head region and every detected helmet box
+3. Take the *maximum overlap* found
+4. If max_overlap < 0.10 → no helmet is covering that person's head
+
+*Why this matters:* A compliant person should have a helmet box that strongly overlaps the top of their body box. If the overlap is absent or negligible, the head is unprotected.
+
+The no-helmet confidence score is directly derived from this:
+
+
+no_helmet_confidence = 1.0 - max_overlap_iou
+
+
+If IoU = 0.0 (no helmet anywhere near), confidence = 1.0 (certain violation).
+If IoU = 0.9 (helmet fully covers head region), confidence = 0.1 (likely compliant).
+
 ## Documentation and Articles
 
 | Article | Link |
