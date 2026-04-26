@@ -10,7 +10,7 @@ import numpy as np
 # ===== PATHS =====
 # ===== PATHS =====
 # Updated to point to the local dataset folder
-data_dir = r"../../dataset" 
+data_dir = r"dataset"
 
 # ===== TRANSFORMS =====
 train_transform = transforms.Compose([

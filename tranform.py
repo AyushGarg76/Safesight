@@ -29,7 +29,7 @@ def map_detection_to_ground(coords, matrix):
     return ground_pts
 
 if __name__ == "__main__":
-    image = cv2.imread("image.png")
+    image = cv2.imread("image_enhancement_functions/image.png")
     if image is not None:
         warped_img, H_matrix = get_birdseye_view(image) 
         
