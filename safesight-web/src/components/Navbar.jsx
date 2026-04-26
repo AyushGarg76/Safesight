@@ -21,7 +21,7 @@ export default function Navbar() {
         <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
             <div className="navbar-inner">
                 <Link to="/" className="navbar-brand">
-                    <span className="logo-icon">S</span>
+                    <img src="/LOGO.png" style={{ height: "30px", width: "auto", marginRight: "2px" }} alt="Safesight Logo" />
                     Safesight
                 </Link>
 

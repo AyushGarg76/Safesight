@@ -1,12 +1,14 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import ViolationsDialog from '../components/ViolationsDialog';
 import './Upload.css';
 
+const API_BASE = '/api';
+
 const PROCESS_STEPS = [
-    'Enhancing frames',
-    'Running YOLO detection',
-    'Computing homography transform',
-    'Mapping violations',
+    'Opening video & preparing frames',
+    'Running Faster R-CNN detection',
+    'Compiling violation report',
+    'Finalizing output',
 ];
 
 export default function Upload() {
@@ -17,7 +19,12 @@ export default function Upload() {
     const [progress, setProgress] = useState(0);
     const [done, setDone] = useState(false);
     const [showDialog, setShowDialog] = useState(false);
+    const [jobId, setJobId] = useState(null);
+    const [results, setResults] = useState(null);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [statusMessage, setStatusMessage] = useState('');
     const inputRef = useRef(null);
+    const pollRef = useRef(null);
 
     const handleFile = useCallback((f) => {
         if (f && (f.type.startsWith('video/') || /\.(mp4|avi|mov|mkv)$/i.test(f.name))) {
@@ -26,6 +33,10 @@ export default function Upload() {
             setCurrentStep(-1);
             setProgress(0);
             setDone(false);
+            setJobId(null);
+            setResults(null);
+            setErrorMsg('');
+            setStatusMessage('');
         }
     }, []);
 
@@ -35,35 +46,106 @@ export default function Upload() {
         if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
     };
 
-    const simulateProcessing = () => {
+    // ── Poll for job status ──────────────────────────────────────────────────
+    const startPolling = useCallback((id) => {
+        if (pollRef.current) clearInterval(pollRef.current);
+
+        pollRef.current = setInterval(async () => {
+            try {
+                const res = await fetch(`${API_BASE}/status/${id}`);
+                const data = await res.json();
+
+                if (data.status === 'error') {
+                    clearInterval(pollRef.current);
+                    setProcessing(false);
+                    setErrorMsg(data.message || 'Processing failed');
+                    return;
+                }
+
+                setProgress(data.progress || 0);
+                setCurrentStep(data.current_step ?? -1);
+                setStatusMessage(data.message || '');
+
+                if (data.status === 'done') {
+                    clearInterval(pollRef.current);
+                    setProcessing(false);
+                    setDone(true);
+                    setProgress(100);
+                    setCurrentStep(PROCESS_STEPS.length);
+
+                    // Fetch full results
+                    const resResult = await fetch(`${API_BASE}/results/${id}`);
+                    const resultData = await resResult.json();
+                    setResults(resultData);
+                }
+            } catch (err) {
+                console.error('Polling error:', err);
+            }
+        }, 1000);
+    }, []);
+
+    // Clean up interval on unmount
+    useEffect(() => {
+        return () => {
+            if (pollRef.current) clearInterval(pollRef.current);
+        };
+    }, []);
+
+    // ── Upload & start processing ────────────────────────────────────────────
+    const startProcessing = async () => {
+        if (!file) return;
+
         setProcessing(true);
         setDone(false);
         setProgress(0);
         setCurrentStep(0);
+        setErrorMsg('');
+        setResults(null);
+        setStatusMessage('Uploading video...');
 
-        let step = 0;
-        const interval = setInterval(() => {
-            step++;
-            const pct = Math.min((step / PROCESS_STEPS.length) * 100, 100);
-            setProgress(pct);
+        try {
+            const formData = new FormData();
+            formData.append('video', file);
 
-            if (step < PROCESS_STEPS.length) {
-                setCurrentStep(step);
-            } else {
-                clearInterval(interval);
-                setCurrentStep(PROCESS_STEPS.length);
-                setProcessing(false);
-                setDone(true);
+            const res = await fetch(`${API_BASE}/upload`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Upload failed');
             }
-        }, 1400);
+
+            const data = await res.json();
+            setJobId(data.job_id);
+            setStatusMessage('Processing started...');
+
+            // Start polling for progress
+            startPolling(data.job_id);
+        } catch (err) {
+            setProcessing(false);
+            setErrorMsg(err.message || 'Failed to upload video');
+        }
     };
 
     const resetUpload = () => {
+        if (pollRef.current) clearInterval(pollRef.current);
         setFile(null);
         setProcessing(false);
         setCurrentStep(-1);
         setProgress(0);
         setDone(false);
+        setJobId(null);
+        setResults(null);
+        setErrorMsg('');
+        setStatusMessage('');
+    };
+
+    const downloadResult = () => {
+        if (jobId) {
+            window.open(`${API_BASE}/download/${jobId}`, '_blank');
+        }
     };
 
     const formatSize = (bytes) => {
@@ -71,6 +153,8 @@ export default function Upload() {
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
+
+    const violationCount = results?.violations?.length || 0;
 
     return (
         <div className="upload-page">
@@ -131,10 +215,25 @@ export default function Upload() {
                                 )}
                             </div>
 
-                            {/* Start / Processing */}
+                            {/* Error */}
+                            {errorMsg && (
+                                <div className="error-banner" style={{
+                                    marginTop: 16,
+                                    padding: '12px 20px',
+                                    background: 'rgba(255, 50, 50, 0.1)',
+                                    border: '1px solid rgba(255, 50, 50, 0.3)',
+                                    borderRadius: 8,
+                                    color: '#ff5252',
+                                    fontSize: '0.9rem',
+                                }}>
+                                    ⚠ {errorMsg}
+                                </div>
+                            )}
+
+                            {/* Start Button */}
                             {!processing && !done && currentStep === -1 && (
                                 <div style={{ marginTop: 24 }}>
-                                    <button className="btn btn-primary" onClick={simulateProcessing}>
+                                    <button className="btn btn-primary" onClick={startProcessing}>
                                         Run Analysis →
                                     </button>
                                 </div>
@@ -144,7 +243,7 @@ export default function Upload() {
                             {(processing || done) && (
                                 <div className="progress-section">
                                     <div className="progress-header">
-                                        <span>{done ? 'Complete' : 'Processing...'}</span>
+                                        <span>{done ? 'Complete' : statusMessage || 'Processing...'}</span>
                                         <span>{Math.round(progress)}%</span>
                                     </div>
                                     <div className="progress-bar-container">
@@ -182,13 +281,21 @@ export default function Upload() {
                                 <div className="results-section">
                                     <h3>Analysis complete</h3>
                                     <p>
-                                        7 safety violations detected across 4 zones in {file.name}
+                                        {violationCount} safety violation{violationCount !== 1 ? 's' : ''} detected
+                                        {results?.elapsed ? ` in ${results.elapsed}s` : ''} in {file.name}
                                     </p>
                                     <button
                                         className="btn btn-primary"
                                         onClick={() => setShowDialog(true)}
                                     >
                                         View Results
+                                    </button>
+                                    <button
+                                        className="btn btn-outline"
+                                        onClick={downloadResult}
+                                        style={{ marginLeft: 12 }}
+                                    >
+                                        Download Video
                                     </button>
                                     <button
                                         className="btn btn-outline"
@@ -208,6 +315,8 @@ export default function Upload() {
             {showDialog && (
                 <ViolationsDialog
                     filename={file?.name || 'video.mp4'}
+                    violations={results?.violations || []}
+                    elapsed={results?.elapsed || 0}
                     onClose={() => setShowDialog(false)}
                 />
             )}
