@@ -260,33 +260,37 @@ These metrics drive the adaptive enhancement strategy (CLAHE, gamma correction, 
 
 ## Project Structure
 
-
+```bash
 SafeSight/
-├── main.py                          # Flask API server + video processing pipeline
-├── image_enhancement.py             # Adaptive pre-processing (CLAHE, gamma, sharpening)
-├── tranform.py                      # Perspective / bird's-eye transform utility
-│
+├── main.py                    # Flask API server + video processing pipeline
+├── image_enhancement.py       # Adaptive pre-processing (CLAHE, gamma, sharpening)
+├── tranform.py                # Perspective / bird's-eye transform utility
+
 ├── helmet_withoutyolo/
 │   ├── V2/scripts/
-│   │   ├── train_model_v4.py        # Faster R-CNN training script
-│   │   ├── evaluate_v4.py           # mAP + confusion matrix evaluation
-│   │   ├── no_helmet_detection.py   # Core helmet reasoning engine
-│   │   ├── app_v4.py                # Standalone inference app
-│   │   └── run_all_v4.py            # End-to-end batch runner
+│   │   ├── train_model_v4.py      # Faster R-CNN training script
+│   │   ├── evaluate_v4.py         # mAP + confusion matrix evaluation
+│   │   ├── no_helmet_detection.py # Core helmet reasoning engine
+│   │   ├── app_v4.py              # Standalone inference app
+│   │   └── run_all_v4.py          # End-to-end batch runner
+│   │
 │   ├── savedmodel/
-│   │   └── best_model_v4.pth        # Trained model weights
-│   └── eval_confusion_matrix.png    # Evaluation output
-│
-└── safesight-web/                   # React + Vite frontend
-    ├── src/
-    │   ├── App.jsx
-    │   ├── pages/
-    │   │   ├── Home.jsx             # Landing page
-    │   │   └── Upload.jsx           # Upload + progress + results page
-    │   └── components/
-    │       ├── Navbar.jsx
-    │       └── ViolationsDialog.jsx
-    └── package.json
+│   │   └── best_model_v4.pth      # Trained model weights
+│   │
+│   └── eval_confusion_matrix.png  # Evaluation output
+
+├── safesight-web/                # React + Vite frontend
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── pages/
+│   │   │   ├── Home.jsx          # Landing page
+│   │   │   └── Upload.jsx        # Upload + progress + results page
+│   │   │
+│   │   └── components/
+│   │       ├── Navbar.jsx
+│   │       └── ViolationsDialog.jsx
+│   │
+│   └── package.json
 
 
 ## Documentation and Articles
