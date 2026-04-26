@@ -209,6 +209,41 @@ $$C_{\text{no-helmet}} = 1 - O_{max}$$
 
 A violation is flagged when $O_{max} < 0.10$.
 
+### Frame Skipping
+
+Only frames satisfying the following are processed by the model:
+
+$$f_k\ \text{is processed if}\ k \bmod n = 0, \quad n = \texttt{FRAME\_SKIP} = 5$$
+
+Skipped frames reuse the previous detection result.
+
+### Faster R-CNN Training Loss
+
+The model is trained with four combined losses:
+
+$$\mathcal{L} = \mathcal{L}{\text{rpn\_cls}} + \mathcal{L}{\text{rpn\box}} + \mathcal{L}{\text{roi\cls}} + \mathcal{L}{\text{roi\_box}}$$
+
+| Loss | Description |
+|---|---|
+| $\mathcal{L}_{\text{rpn\_cls}}$ | Objectness classification in the Region Proposal Network |
+| $\mathcal{L}_{\text{rpn\_box}}$ | Proposal box regression |
+| $\mathcal{L}_{\text{roi\_cls}}$ | Final class prediction (helmet / head / person) |
+| $\mathcal{L}_{\text{roi\_box}}$ | Final bounding box regression |
+
+### Image Quality Metrics (Enhancement Module)
+
+For a grayscale frame with pixel intensities $I_i$ over $N$ pixels:
+
+$$\mu = \frac{1}{N}\sum_{i=1}^{N} I_i \qquad \text{(mean brightness)}$$
+
+$$\sigma = \sqrt{\frac{1}{N}\sum_{i=1}^{N}(I_i - \mu)^2} \qquad \text{(contrast)}$$
+
+$$SR = \frac{1}{N}\sum_{i=1}^{N}\mathbf{1}(I_i < 50) \qquad \text{(shadow ratio)}$$
+
+$$B = \mathrm{Var}(\nabla^2 I) \qquad \text{(blur score via Laplacian variance)}$$
+
+These metrics drive the adaptive enhancement strategy (CLAHE, gamma correction, sharpening, histogram equalization) applied before model inference.
+
 ## Documentation and Articles
 
 | Article | Link |
