@@ -10,7 +10,7 @@ A project under the course UCS532: Computer vision (3W13)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 *An end-to-end computer vision system for detecting helmet compliance in video — without YOLO.*
-
+</div>
 
 ## Overview
 SafeSight is a computer vision–based surveillance system designed to enhance safety by monitoring video streams and detecting critical scenarios such as helmet compliance. The system integrates image processing and real-time analysis to improve automated monitoring.
