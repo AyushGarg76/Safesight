@@ -217,18 +217,20 @@ $$f_k\ \text{is processed if}\ k \bmod n = 0, \quad n = \texttt{FRAME\_SKIP} = 5
 
 Skipped frames reuse the previous detection result.
 
+
+
 ### Faster R-CNN Training Loss
 
 The model is trained with four combined losses:
 
-$$\mathcal{L} = \mathcal{L}{\text{rpn\_cls}} + \mathcal{L}{\text{rpn\box}} + \mathcal{L}{\text{roi\cls}} + \mathcal{L}{\text{roi\_box}}$$
+**L = L_rpn_cls + L_rpn_box + L_roi_cls + L_roi_box**
 
 | Loss | Description |
-|---|---|
-| $\mathcal{L}_{\text{rpn\_cls}}$ | Objectness classification in the Region Proposal Network |
-| $\mathcal{L}_{\text{rpn\_box}}$ | Proposal box regression |
-| $\mathcal{L}_{\text{roi\_cls}}$ | Final class prediction (helmet / head / person) |
-| $\mathcal{L}_{\text{roi\_box}}$ | Final bounding box regression |
+|------|-------------|
+| L_rpn_cls | Objectness classification in the Region Proposal Network |
+| L_rpn_box | Proposal box regression |
+| L_roi_cls | Final class prediction (helmet / head / person) |
+| L_roi_box | Final bounding box regression |
 
 ### Image Quality Metrics (Enhancement Module)
 
