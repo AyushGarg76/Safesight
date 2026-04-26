@@ -112,45 +112,53 @@ flowchart LR
 ### Backend Job Lifecycle
 
 
-![Backend Job Lifecycle](assets/backend-architecture.png)
+![Backend Job Lifecycle](/assets/backend-architecture.png)
 
 
 
 
+## Pipeline Walkthrough
 
-## 2. Mathematical Calculations
+### Step 1 — Upload & Job Creation
 
-### Step 1: Solving for $H$
-The function `cv2.getPerspectiveTransform` takes 4 pairs of points. Each point provides two linear equations. Since there are 8 unknowns in the matrix, **4 points** are the mathematical minimum required to solve the system.
+The user uploads a video through the frontend. The Flask backend:
 
-### Step 2: Point Transformation
-To map a worker's detection (e.g., feet at $[x, y]$) to the ground, we use **Homogeneous Coordinates**. We add a third dimension $w=1$:
+1. Saves the file to uploads/
+2. Generates a short job_id (UUID prefix)
+3. Initialises an in-memory job record
+4. Spawns a *background daemon thread* to process the video
+5. Returns job_id immediately so the frontend can poll status
 
-$$
-\begin{bmatrix} x' \\\\ y' \\\\ w' \end{bmatrix} = H \cdot \begin{bmatrix} x \\\\ y \\\\ 1 \end{bmatrix}
-$$
+### Step 2 — Frame Sampling
 
-### Step 3: Perspective Division (Normalization)
-The resulting $x'$ and $y'$ are in "projective space." To get the final pixel coordinates on your 2D map, the computer must divide by the scaling factor $w'$:
+Reading every frame from a long video is expensive. The system uses *frame skipping*:
 
-$$
-\text{Map}_X = \frac{x'}{w'} \quad , \quad \text{Map}_Y = \frac{y'}{w'}
-$$
+- Only frames where frame_idx % FRAME_SKIP == 0 are sent to the model
+- Skipped frames reuse the previous frame's bounding boxes
+- This gives 5× reduction in inference calls with minimal visual impact
 
-## 3. Function Explanations
+### Step 3 — Batch Inference
 
-### `get_birdseye_view(frame)`
-* **Input**: A raw CCTV frame.
-* **Process**: Calculates the $H$ matrix and warps the entire image using **Bilinear Interpolation** (`INTER_LINEAR`).
-* **Purpose**: Creates the visual "Map" of the factory floor.
+Sampled frames are buffered until BATCH_SIZE = 8 accumulate, then sent to Faster R-CNN in a single GPU batch. This is significantly faster than one-by-one inference.
 
-### `map_detection_to_ground(coords, matrix)`
-* **Input**: $[x, y]$ coordinates (ideally the bottom-center of a YOLO bounding box).
-* **Process**: Applies the matrix multiplication and perspective division to that specific point.
-* **Efficiency**: This is significantly faster than warping the whole image because it only calculates the transformation for a single pixel coordinate.
+### Step 4 — Helmet Reasoning Engine
 
-## 4. Why Use "Bottom-Center" for Coordinates?
-When mapping detections to a ground plane, using the center of a bounding box (the person's waist) will result in a "floating" error. By using the **bottom-center** (the feet), we ensure the coordinate exists exactly on the $Z=0$ plane where the homography matrix is valid.
+The raw detections are passed to the *Helmet Reasoning Engine* (see next section).
+
+### Step 5 — Annotation & Video Reconstruction
+
+Each frame is annotated with:
+
+- *Gray* boxes for detected persons
+- *Green* boxes for detected helmets
+- *Red* boxes with NO HELMET XX% for violations
+- A *red alert banner* across the top if any violation is found in that frame
+
+The frames are written in order to an mp4v output file.
+
+### Step 6 — Violation Aggregation
+
+Individual frame violations are grouped by timestamp. Consecutive seconds are merged into ranges (e.g., 00:12 - 00:15), giving a clean, human-readable violation report.
 
 
 ## Documentation and Articles
